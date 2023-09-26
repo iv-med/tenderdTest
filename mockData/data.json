@@ -1,0 +1,93 @@
+[
+    {
+        "id": 9312879,
+        "temp1": 77.13590513915076,
+        "temp2Sensor": false,
+        "humiditySensor": false,
+        "presence": true,
+        "datetime": "2023-10-19T17:44:24.996Z"
+    },
+    {
+        "id": 7508421,
+        "deviceId": "fae31e7343f3",
+        "temp2Sensor": true,
+        "humiditySensor": true,
+        "presence": false,
+        "upTime": 162696949
+    },
+    {
+        "id": 2122632,
+        "temp1": 110.260435452508,
+        "temp2Sensor": true,
+        "humiditySensor": false,
+        "presence": false,
+        "datetime": 1695881415560,
+        "upTime": 681944308
+    },
+    {
+        "id": 275043,
+        "deviceId": "262c1d7df159",
+        "temp2Sensor": true,
+        "humidity": 52.96787517896221,
+        "humiditySensor": true,
+        "presence": false
+    },
+    {
+        "id": 1035241,
+        "temp2Sensor": false,
+        "humiditySensor": true,
+        "presence": false,
+        "upTime": 471481065
+    },
+    {
+        "id": 3849003,
+        "temp1": 54.81322394660014,
+        "temp2": 56.04398533571373,
+        "temp2Sensor": false,
+        "humidity": 26.489269977367485,
+        "humiditySensor": true,
+        "presence": true
+    },
+    {
+        "id": 1447492,
+        "deviceId": "631bd4d31aa9",
+        "temp2": 18.753998279047213,
+        "temp2Sensor": false,
+        "humiditySensor": false,
+        "presence": false,
+        "datetime": 1697865642522,
+        "rssi": -72,
+        "upTime": 931283031
+    },
+    {
+        "id": 9858069,
+        "temp1": 19.747688969370593,
+        "temp2Sensor": true,
+        "humiditySensor": false,
+        "presence": false,
+        "datetime": 1697856202703,
+        "upTime": 162247754
+    },
+    {
+        "id": 3805294,
+        "deviceId": "",
+        "temp1": 19.712767916722452,
+        "temp2": 90.185381219483,
+        "temp2Sensor": true,
+        "humidity": 91.26121318282101,
+        "humiditySensor": false,
+        "presence": true,
+        "datetime": 1696874595317,
+        "upTime": 890726347
+    },
+    {
+        "id": 5801540,
+        "temp1": 10.954694383392505,
+        "temp2": 120.26045400395331,
+        "temp2Sensor": false,
+        "humidity": 25.933198982429147,
+        "humiditySensor": false,
+        "presence": false,
+        "rssi": -77
+    }
+]

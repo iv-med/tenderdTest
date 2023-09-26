@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"rootDir": "./",
+		"outDir": "dist",
+		"strict": true,
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"noImplicitAny": false,
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"types": ["node"],
+	//	"noUnusedLocals": true,
+	//	"noUnusedParameters": true
+	},
+	"exclude": ["node_modules"]
+}

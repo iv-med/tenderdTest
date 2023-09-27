@@ -1,3 +1,5 @@
+// datapoints types
+
 export type dataPoint = {
   id?: number;
   deviceId?: string;
@@ -7,7 +9,7 @@ export type dataPoint = {
   humidity?: number;
   humiditySensor?: boolean;
   presence?: boolean;
-  datetime?: string | number;
+  datetime?: string;
   rssi?: number;
   upTime?: number;
 };
@@ -16,7 +18,7 @@ export type normalizedDataPoint = {
   normalizedID: number;
   id?: number;
   deviceId: string | null;
-  timestamp: number | null;
+  timestamp?: Date;
   temp1: number | null;
   temp2: number | null;
   temp2Sensor: boolean;
@@ -27,8 +29,8 @@ export type normalizedDataPoint = {
   upTime: number | null;
 };
 
-export type errorType ={
-  errorMsg: string,
-  message: string
-  value?: string | number
-}
+export type errorType = {
+  errorMsg: string;
+  message: string;
+  value?: string | number;
+};

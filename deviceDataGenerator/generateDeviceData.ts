@@ -18,7 +18,7 @@ const generateDataPoint = () => {
   if (randomBool()) {
     // is device id is correct format (6 chars)
     if (randomBool()) {
-      dataPoint.deviceId = randomBytes(6).toString("hex");
+      dataPoint.deviceId = randomBytes(8).toString("hex");
     } else {
       dataPoint.deviceId = randomBytes(Math.floor(Math.random() * 10)).toString(
         "hex"
@@ -58,7 +58,7 @@ const generateDataPoint = () => {
       dataPoint.datetime = randomDate;
     } else {
       //generate timestamp
-      dataPoint.datetime = Date.parse(randomDate);
+      dataPoint.datetime = String(Date.parse(randomDate));
     }
   }
 

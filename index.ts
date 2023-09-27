@@ -1,15 +1,4 @@
-/*Listens to a simulated sensor data stream (you may use mock data).
-Validates the incoming data based on simple predefined rules (e.g., temperature range, proper
-format, etc.).
-Sends alerts (can be console logs for this exercise) when the data does not conform to the set
-rules.
-Logs the incoming data and its validation status.
-Requirements:
-Implement at least one endpoint that can be hit to retrieve the validation status of the last 10
-data points.
-Use any local database (e.g., PostgreSQL/MongoDB) to store the data.
-Consider edge cases (e.g., missing data, corrupt data).
-Include basic error handling.*/
+/* main script */
 
 import express from "express";
 
@@ -17,14 +6,28 @@ import devicesDataRouter from "./routes/devicesData";
 import logger from "morgan";
 
 import processDeviceData from "./analyze/index";
-
+import { AppDataSource } from "./configs/connection";
 
 const app: express.Application = express();
-const port: number = 3005;
+const port: number = 3000;
 
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// connect and init DB
+AppDataSource.initialize()
+  .then(() => {
+    console.log("Data Source has been initialized!");
+
+    // start simulation data receiving processing
+    processDeviceData();
+  })
+  .catch((err) => {
+    console.error("Error during Data Source initialization", err);
+    console.log("Server closed");
+    process.exit(1);
+  });
 
 app.use("/api/devicesData", devicesDataRouter);
 
@@ -33,10 +36,17 @@ app.get("/", (req, res) => {
   res.send("Hello from the Devices Data Microservice");
 });
 
-processDeviceData();
+app.use((req, res, next) => {
+  res.status(404).json({
+    message:
+      "Ohh you are lost, read the API documentation to find your way back home)",
+  });
+});
 
 // Server setup
 app.listen(port, () => {
   console.log(`Devices Data Microservice
          http://localhost:${port}/`);
 });
+
+export default app;

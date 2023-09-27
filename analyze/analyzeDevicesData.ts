@@ -2,21 +2,23 @@ import * as fs from "fs";
 import { mockFileName, logNormalizingFileName } from "../configs/config";
 import { dataPoint, normalizedDataPoint, errorType } from "../types";
 import { normalizeDataPoint } from "../transform/normalyzedDataPoint";
+import { insertDeviceData } from "../controllers/DevicesData.controller";
+import { validateSync } from "class-validator";
+import { DevicesDataDTO } from "../dto/DevicesData.dto";
+
 const winston = require("winston");
 
+//create loger
 const normalizingLogger = winston.createLogger({
   level: "info",
-  //format: winston.format.json(),
+  format: winston.format.json(),
   defaultMeta: { service: "user-service" },
   transports: [
-    //
-    // - Write all logs with importance level of `error` or less to `error.log`
-    // - Write all logs with importance level of `info` or less to `combined.log`
-    //
     new winston.transports.File({ filename: logNormalizingFileName }),
   ],
 });
 
+// analize, normalyze and insert data to the DB
 export const analyzeDevicesData = () => {
   // load in data from json file
   const getThermoData: () => Promise<string> = () => {
@@ -32,7 +34,6 @@ export const analyzeDevicesData = () => {
     try {
       let dataJSON: string = await getThermoData();
       let deviceData: dataPoint[] = JSON.parse(dataJSON);
-      let readyForInsert: boolean = true;
 
       // exit analysis if no data
       if (deviceData.length === 0) {
@@ -42,19 +43,23 @@ export const analyzeDevicesData = () => {
 
       // loop over generator function to asynchronously retrieve chunks of device data
       for await (const rawChunk of deviceData) {
+        let readyForInsert: boolean = true;
+
         console.log("--- New DataPoint recieved ---");
         console.log(JSON.stringify(rawChunk, null, "\t"));
         const chunk: normalizedDataPoint = normalizeDataPoint(rawChunk);
         let errorCheck: errorType[] = [];
         let warningCheck: errorType[] = [];
+
         console.log("--- DataPoint normalized ---");
+
         console.log(JSON.stringify(chunk, null, "\t"));
         if (chunk.deviceId !== null) {
           const length: number = chunk.deviceId.length;
           if (length < 6 || length > 10) {
             let error: errorType = {
               errorMsg: "deviceId",
-              message: "Should be >6 and <10",
+              message: "Should be 6< and <10",
             };
             errorCheck.push(error);
             readyForInsert = false;
@@ -65,13 +70,15 @@ export const analyzeDevicesData = () => {
           errorCheck.push(error);
         }
 
-        if (chunk.timestamp !== null) {
+        if (chunk.timestamp !== undefined) {
           //if timestamp is older than 24 hours
-          if (chunk.timestamp < Date.now() - 60000 * 60 * 24) {
+          if (
+            new Date(chunk.timestamp) < new Date(Date.now() - 60000 * 60 * 24)
+          ) {
             let error: errorType = {
               errorMsg: "DateTime",
               message: "Very old",
-              value: chunk.timestamp,
+              value: String(chunk.timestamp),
             };
             warningCheck.push(error);
           }
@@ -191,8 +198,7 @@ export const analyzeDevicesData = () => {
         let errorCount: number = errorCheck.length;
         if (errorCount > 0) {
           console.error(
-            "%cErrors found: " + JSON.stringify(errorCheck, null, "\t"),
-            "color: red"
+            "Errors found: " + JSON.stringify(errorCheck, null, "\t")
           );
         }
 
@@ -202,10 +208,43 @@ export const analyzeDevicesData = () => {
           );
         }
 
+        console.log("Ready for insert: " + String(readyForInsert));
+
+        if (readyForInsert) {
+          //insert data into DB
+          let valForInsert = new DevicesDataDTO();
+          valForInsert.deviceId = String(chunk.deviceId);
+          valForInsert.timestamp = new Date(
+            Date.parse(String(chunk.timestamp))
+          );
+          valForInsert.temp1 = Number(chunk.temp1);
+          valForInsert.temp2 = Number(chunk.temp2);
+          valForInsert.humidity = Number(chunk.humidity);
+          valForInsert.presence = Boolean(chunk.presence);
+          valForInsert.rssi = Number(chunk.rssi);
+          valForInsert.uptime = Number(chunk.upTime);
+
+          const resultValidate = validateSync(valForInsert);
+
+          if (resultValidate.length > 0) {
+            console.log("Validation failed. errors: ", resultValidate);
+            throw resultValidate;
+          } else {
+            const resultQuery = await insertDeviceData(valForInsert);
+            console.log("Inserting OK. results: ", resultQuery);
+          }
+        }
+
         normalizingLogger.log({
           level: errorCount > 0 ? "error" : "info",
-          message: JSON.stringify({datetime: new Date().toLocaleString(), errorCheck, warningCheck, chunk }),
+          message: JSON.stringify({
+            datetime: new Date().toLocaleString(),
+            errorCheck,
+            warningCheck,
+            chunk,
+          }),
         });
+        console.log(`\n--- End of datapoing. ---`);
 
         await new Promise((r) => setTimeout(r, 10000));
       }

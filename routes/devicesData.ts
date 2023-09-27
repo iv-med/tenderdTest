@@ -1,35 +1,98 @@
-/*Listens to a simulated sensor data stream (you may use mock data).
-Validates the incoming data based on simple predefined rules (e.g., temperature range, proper
-format, etc.).
-Sends alerts (can be console logs for this exercise) when the data does not conform to the set
-rules.
-Logs the incoming data and its validation status.
-Requirements:
-Implement at least one endpoint that can be hit to retrieve the validation status of the last 10
-data points.
-Use any local database (e.g., PostgreSQL/MongoDB) to store the data.
-Consider edge cases (e.g., missing data, corrupt data).
-Include basic error handling.*/
+/* /api/devicesData/* router */
 
 import express from "express";
 import { logNormalizingFileName } from "../configs/config";
+import {
+  getDeviceData,
+  getAllDevicesData,
+  insertDeviceData,
+  deleteDeviceData,
+  deleteAllDeviceData,
+} from "../controllers/DevicesData.controller";
+import { validateSync } from "class-validator";
+import { DevicesDataDTO } from "../dto/DevicesData.dto";
 
 const readLastLines = require("read-last-lines");
 const devicesDataRouter: express.Router = express.Router();
 
-/**GET last 10 dataSets from the DB */
-devicesDataRouter.get("/", function (req, res, next) {
+devicesDataRouter.put("/", async (req, res) => {
   try {
-    res.send("Hello from the Devices!");
+    let valForInsert = new DevicesDataDTO();
+    valForInsert.deviceId = req.body.deviceId;
+    valForInsert.timestamp = req.body.timestamp;
+    valForInsert.temp1 = req.body.temp1;
+    valForInsert.temp2 = req.body.temp2;
+    valForInsert.humidity = req.body.humidity;
+    valForInsert.presence = req.body.presence;
+    valForInsert.rssi = req.body.rssi;
+    valForInsert.uptime = req.body.uptime;
+
+    const resultValidate = validateSync(valForInsert);
+    if (resultValidate.length > 0) {
+      console.log("Validation failed. errors: ", resultValidate);
+      throw resultValidate;
+    } else {
+      const resultQuery = await insertDeviceData(valForInsert);
+      console.log("Inserting OK. results: ", resultQuery);
+      res.status(200).send({ status: "OK", message: resultQuery });
+    }
+  } catch (error) {
+    console.log("error: ", error);
+    res.status(400).send({ status: "Error", message: error });
+  }
+});
+
+/**GET dataSets from the DB */
+devicesDataRouter.get("/", async (req, res) => {
+  try {
+    const resultQuery = await getAllDevicesData();
+    res.status(200).send({ status: "OK", message: resultQuery });
   } catch (err) {
-    console.error(err);
+    console.log("error: ", err);
+    res.status(400).send({ status: "Error", message: err });
+  }
+});
+
+/**GET dataSet from the DB with id */
+devicesDataRouter.get("/:id", async (req, res) => {
+  try {
+    const resultQuery = await getDeviceData(Number(req.params.id));
+    res.status(resultQuery !== null ? 200 : 404).send({
+      status: resultQuery !== null ? "OK" : "Not found!",
+      message: resultQuery,
+    });
+  } catch (err) {
+    console.log("error: ", err);
+    res.status(400).send({ status: "Error", message: err });
+  }
+});
+
+/** Delete dataPoint from the DB with id */
+devicesDataRouter.delete("/:id", async (req, res) => {
+  try {
+    const resultQuery = await deleteDeviceData(Number(req.params.id));
+    res.status(200).send({ status: "OK", message: resultQuery });
+  } catch (err) {
+    console.log("error: ", err);
+    res.status(400).send({ status: "Error", message: err });
+  }
+});
+
+/** Truncate dataSet from the DB with id */
+devicesDataRouter.delete("/", async (req, res) => {
+  try {
+    const resultQuery = await deleteAllDeviceData();
+    res.status(200).send({ status: "OK", message: resultQuery });
+  } catch (err) {
+    console.log("error: ", err);
+    res.status(400).send({ status: "Error", message: err });
   }
 });
 
 /**
  * Get last 10 validation results (from the log file)
  */
-devicesDataRouter.get("/lastValidation", function (req, res, next) {
+devicesDataRouter.get("/validationData/last10", function (req, res, next) {
   try {
     readLastLines.read(logNormalizingFileName, 10).then((lines: string) => {
       const trimStrings: string[] = lines.trim().split("\n");
@@ -40,11 +103,11 @@ devicesDataRouter.get("/lastValidation", function (req, res, next) {
 
         linesParced.push(line);
       }
-
-      res.send(linesParced);
+      res.status(200).send({ status: "OK", message: linesParced });
     });
   } catch (err) {
-    console.error(err);
+    console.log("error: ", err);
+    res.status(400).send({ status: "Error", message: err });
   }
 });
 

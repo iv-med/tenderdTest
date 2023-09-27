@@ -1,3 +1,5 @@
+// data packet normalizing
+
 import { dataPoint, normalizedDataPoint } from "../types";
 import { millisToSeconds, round } from "./helpers";
 
@@ -7,11 +9,8 @@ export const normalizeDataPoint: (chunk: dataPoint) => normalizedDataPoint = (
   return {
     normalizedID: Math.floor(Math.random() * 10000000),
     id: chunk.id,
-    deviceId: chunk.deviceId ? chunk.deviceId.toUpperCase() : null,
-    timestamp:
-      typeof chunk.datetime === "string"
-        ? Date.parse(chunk.datetime)
-        : chunk.datetime ?? null,
+    deviceId: chunk.deviceId ? String(chunk.deviceId).toUpperCase() : null,
+    timestamp: new Date(String(chunk.datetime)),
     temp1: chunk.temp1 ? round(chunk.temp1) : null,
     temp2: chunk.temp2 ? round(chunk.temp2) : null,
     temp2Sensor: chunk.temp2 ? true : false,

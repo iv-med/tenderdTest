@@ -36,24 +36,20 @@ You can change server port in index.ts file (port variable)
    ```
    to install node dependencies
 3. Run
-   ```sh
-   npm start
-   ```
+    ```sh
+        npm start
+    ```
    to start the microservice (prod mode)
 4. Run
-
-```sh
-   npm run dev
-```
-
-to start the microservice (dev mode) 5.
-Run
-
-```sh
-npm run generateMock
-```
-
-to generate random datasets (will be saved in 'mockData/data.json')
+    ```sh
+        npm run dev
+    ```
+    to start the microservice (dev mode) 
+5. Run
+    ```sh
+        npm run generateMock
+    ```
+    to generate random datasets (will be saved in 'mockData/data.json')
 
 ## Project functionality
 
@@ -97,6 +93,10 @@ By default mock file contains 100 datapoints, you can generate custom datapoint 
 App tries to parse and normalize datapoint, if data is valid then insert it in to DB.
 
 Logs of normalizing adding to the "/logs/normalizing.log" file (each log item is a line with JSON string);
+
+### Alarms
+
+While data normalization we can get different types of alarms, such as big temperature alarm (between temp1 and temp2), cold temperature, hot temperature, outdated datetime (more than 24 hours left), low Wi-Fi signal etc.
 
 ### Routes
 

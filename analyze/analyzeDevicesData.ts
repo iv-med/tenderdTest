@@ -131,7 +131,9 @@ export const analyzeDevicesData = () => {
         }
 
         if (chunk.temp2 && chunk.temp1) {
-          let tempDiff: number = chunk.temp2 - chunk.temp1;
+          let tempDiff: number = Math.abs(
+            Math.abs(chunk.temp2) - Math.abs(chunk.temp1)
+          );
           if (tempDiff > 10.0) {
             let error: errorType = {
               errorMsg: "temp1, temp2",
